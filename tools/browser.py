@@ -14,7 +14,7 @@ class OKBrowser:
     SETTINGS_PAGE_URL = "https://ok.ru/settings"
 
     def __init__(self):
-        self.browser = webdriver.Chrome('../resources/chromedriver')
+        self.browser = webdriver.Chrome('resources/chromedriver')
         self.browser.set_window_size(1024, 768)
         self.browser.set_page_load_timeout(10)
         self.browser.implicitly_wait(5)
