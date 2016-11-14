@@ -5,29 +5,22 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from time import sleep
 
 
 class OKBrowser:
     MAIN_PAGE_URL = "https://ok.ru"
     SETTINGS_PAGE_URL = "https://ok.ru/settings"
 
-    SETTINGS_FIELDS = {
-        "first_name": ".//*[@id='field_name']",
-        "last_name": ".//*[@id='field_surname']",
-        "day_birthday": ".//*[@id='field_bday']",
-        "month_birthday": ".//*[@id='field_bmonth']",
-        "year_birthday": ".//*[@id='field_byear']",
-        "current_city_search": ".//*[@id='field_citySugg_SearchInput']",
-        "origin_city_search": ".//*[@id='field_cityBSugg_SearchInput']",
-    }
-
     def __init__(self):
         self.browser = webdriver.Chrome('../resources/chromedriver')
         self.browser.set_window_size(1024, 768)
         self.browser.set_page_load_timeout(10)
+        self.browser.implicitly_wait(5)
 
     def open_main_page(self):
-        return self.browser.get(self.MAIN_PAGE_URL)
+        self.browser.get(self.MAIN_PAGE_URL)
 
     def log_in(self, login, password):
         name_input = self.browser.find_element_by_xpath(locators.Credentials.LOGIN)
@@ -39,27 +32,29 @@ class OKBrowser:
 
     def open_settings_page(self):
         self.browser.get(self.SETTINGS_PAGE_URL)
+        sleep(3)
 
     def set_locale(self, language):
         self.browser.find_element_by_xpath(locators.Language.MENU).click()
         self.browser.find_element_by_xpath(language).click()
 
     def open_edit_setting_dialog(self):
-        self.browser.implicitly_wait(5)
         self.browser.find_element_by_xpath(locators.SettingsPage.SETTINGS_DIALOG).click()
+        sleep(3)
 
     def user_settings_action(self, action):
-        self.browser.implicitly_wait(5)
         self.browser.find_element_by_xpath(locators.SettingsDialog.BUTTONS.get(action)).click()
+        sleep(3)
 
     def set_text_setting(self, text_field, value):
-        self.browser.implicitly_wait(5)
         setting_web_element = self.browser.find_element_by_xpath(locators.SettingsDialog.TEXT_FIELDS.get(text_field))
         setting_web_element.clear()
         setting_web_element.send_keys(value)
+        if text_field == "origin_city":
+            setting_web_element.send_keys(Keys.TAB)
+        sleep(2)
 
     def get_select_setting_options_list(self, select_field):
-        self.browser.implicitly_wait(5)
         select_web_element = Select(self.browser.find_element_by_xpath(
             locators.SettingsDialog.SELECT_FIELDS.get(select_field))
         )
@@ -78,16 +73,15 @@ class OKBrowser:
             select_web_element.select_by_value(value)
 
     def set_gender(self, gender):
-        self.browser.implicitly_wait(5)
         if gender == "male":
-            gender_button_web_element = self.browser.find_element_by_xpath(".//*[@id='field_gender_1']")
+            gender_button_web_element = self.browser.find_element_by_xpath(locators.SettingsDialog.GENDER_BUTTONS.get('male'))
         else:
-            gender_button_web_element = self.browser.find_element_by_xpath(".//*[@id='field_gender_2']")
+            gender_button_web_element = self.browser.find_element_by_xpath(locators.SettingsDialog.GENDER_BUTTONS.get('female'))
         gender_button_web_element.click()
 
     def get_gender(self):
-        male_button_web_element = self.browser.find_element_by_xpath(".//*[@id='field_gender_1']")
-        female_button_web_element = self.browser.find_element_by_xpath(".//*[@id='field_gender_2']")
+        male_button_web_element = self.browser.find_element_by_xpath(locators.SettingsDialog.GENDER_BUTTONS.get('male'))
+        female_button_web_element = self.browser.find_element_by_xpath(locators.SettingsDialog.GENDER_BUTTONS.get('female'))
         if male_button_web_element.is_selected():
             return "male"
         if female_button_web_element.is_selected():
@@ -95,7 +89,7 @@ class OKBrowser:
 
     def get_error_text_for_setting(self, field_with_error, error_text):
         try:
-            WebDriverWait(self.browser, 10).until(
+            WebDriverWait(self.browser, 15).until(
                 expected_conditions.text_to_be_present_in_element(
                     (
                         By.XPATH,
@@ -108,12 +102,10 @@ class OKBrowser:
         return error_text_web_element.text
 
     def get_text_setting_value(self, text_field):
-        self.browser.implicitly_wait(5)
         setting_web_element = self.browser.find_element_by_xpath(locators.SettingsDialog.TEXT_FIELDS.get(text_field))
         return setting_web_element.get_attribute("value")
 
     def get_select_setting_value(self, select_field):
-        self.browser.implicitly_wait(5)
         select_web_element = Select(self.browser.find_element_by_xpath(
             locators.SettingsDialog.SELECT_FIELDS.get(select_field))
         )
